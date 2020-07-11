@@ -3,6 +3,9 @@
 This repository has been [forked](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) from ODK Collect.
 The master branch is reserved for updated of the main ODK code, with the purpose of keeping it updated with the main development.
 
+
+https://help.github.com/en/github/getting-started-with-github/fork-a-repo
+
 Read [here](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork) how to keep the fork synced to the main repository.
 
 
