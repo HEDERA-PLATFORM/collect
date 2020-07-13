@@ -32,15 +32,14 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="84dp"
         android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/logo_survey"
             android:layout_width="100dp"
             android:layout_height="80dp"
-            app:srcCompat="@drawable/survey_logo"
-            android:contentDescription="TODO" />
+            app:srcCompat="@drawable/survey_logo" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_survey"
@@ -53,5 +52,93 @@
             android:textSize="24sp"
             android:textStyle="bold"
             tools:ignore="OnClick" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo_setup"
+            android:layout_width="100dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/setup_logo" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_setup"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:onClick="SurveysIn"
+            android:text="@string/main_setup"
+            android:textAlignment="gravity"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:ignore="OnClick" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo_tutorial"
+            android:layout_width="100dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/logo_tutorial" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_tutorial"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:onClick="SurveysIn"
+            android:text="@string/main_tutorial"
+            android:textAlignment="gravity"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:ignore="OnClick" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/logo_info"
+            android:layout_width="100dp"
+            android:layout_height="80dp"
+            app:srcCompat="@drawable/info_logo" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_info"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:onClick="SurveysIn"
+            android:text="@string/main_info"
+            android:textAlignment="gravity"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            tools:ignore="OnClick" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/htua"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="@string/main_htua"
+            android:textSize="18sp" />
     </LinearLayout>
 </LinearLayout>
