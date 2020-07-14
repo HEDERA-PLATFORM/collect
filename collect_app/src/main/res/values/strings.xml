@@ -91,7 +91,11 @@
     <string name="load_remote_form_error">Error Getting Form List</string>
     <string name="location_accuracy">Accuracy: %1$s m</string>
     <string name="location_provider">Location provider: %s</string>
+    <string name="main_info">Info</string>
+    <string name="main_htua">How to use this app</string>
     <string name="main_survey">Survey</string>
+    <string name="main_setup">Setup</string>
+    <string name="main_tutorial">Tutorial</string>
     <string name="manage_files">Delete Saved Form</string>
     <string name="mark_finished">Mark form as finalized</string>
     <string name="noselect_error">Sorry, you have not selected any forms!</string>
