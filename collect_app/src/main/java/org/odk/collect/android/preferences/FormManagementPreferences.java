@@ -93,7 +93,7 @@ public class FormManagementPreferences extends BasePreferenceFragment {
                     if (newValue.equals(getString(R.string.never_value))) {
                         Preference automaticUpdatePreference = findPreference(KEY_AUTOMATIC_UPDATE);
                         if (automaticUpdatePreference != null) {
-                            automaticUpdatePreference.setEnabled(false);
+                            automaticUpdatePreference.setEnabled(true);
                         }
                     }
                     getActivity().recreate();
@@ -115,12 +115,12 @@ public class FormManagementPreferences extends BasePreferenceFragment {
                         .get(KEY_PERIODIC_FORM_UPDATES_CHECK);
 
                 // Only enable automatic form updates if periodic updates are set
-                pref.setEnabled(!formUpdateCheckPeriod.equals(getString(R.string.never_value)));
+                pref.setEnabled(!formUpdateCheckPeriod.equals(getString(R.string.every_24_hours_value)));
 
                 pref.setOnPreferenceChangeListener((preference, newValue) -> {
                     analytics.logEvent(AUTO_FORM_UPDATE_PREF_CHANGE, "Automatic form updates", newValue + " " + formUpdateCheckPeriod);
 
-                    return true;
+                    return false;
                 });
             }
         }

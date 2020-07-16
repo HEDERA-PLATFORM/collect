@@ -316,11 +316,11 @@ public class MainMenuActivity extends CollectAbstractActivity implements AdminPa
     }
 
     private void setButtonsVisibility() {
-        reviewDataButton.setVisibility(viewModel.shouldEditSavedFormButtonBeVisible() ? View.VISIBLE : View.GONE);
-        sendDataButton.setVisibility(viewModel.shouldSendFinalizedFormButtonBeVisible() ? View.VISIBLE : View.GONE);
-        viewSentFormsButton.setVisibility(viewModel.shouldViewSentFormButtonBeVisible() ? View.VISIBLE : View.GONE);
+        reviewDataButton.setVisibility(viewModel.shouldEditSavedFormButtonBeVisible() ? View.INVISIBLE : View.GONE);
+        sendDataButton.setVisibility(viewModel.shouldSendFinalizedFormButtonBeVisible() ? View.INVISIBLE : View.GONE);
+        viewSentFormsButton.setVisibility(viewModel.shouldViewSentFormButtonBeVisible() ? View.INVISIBLE : View.GONE);
         getFormsButton.setVisibility(viewModel.shouldGetBlankFormButtonBeVisible() ? View.VISIBLE : View.GONE);
-        manageFilesButton.setVisibility(viewModel.shouldDeleteSavedFormButtonBeVisible() ? View.VISIBLE : View.GONE);
+        manageFilesButton.setVisibility(viewModel.shouldDeleteSavedFormButtonBeVisible() ? View.INVISIBLE : View.GONE);
     }
 
     @Override
