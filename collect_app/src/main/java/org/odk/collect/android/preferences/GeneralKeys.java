@@ -71,7 +71,7 @@ public final class GeneralKeys {
     // values
     public static final String NAVIGATION_SWIPE             = "swipe";
     public static final String CONSTRAINT_BEHAVIOR_ON_SWIPE = "on_swipe";
-    public static final String NAVIGATION_BUTTONS           = "buttons";
+    public static final String NAVIGATION_BUTTONS           = "swipe_buttons";
     private static final String AUTOSEND_OFF                = "off";
     private static final String GUIDANCE_HINT_OFF           = "no";
     static final String KEY_AUTOSEND_WIFI                   = "autosend_wifi";
@@ -104,8 +104,8 @@ public final class GeneralKeys {
         hashMap.put(KEY_IMAGE_SIZE,                 "original_image_size");
         hashMap.put(KEY_INSTANCE_SYNC,              true);
         hashMap.put(KEY_MATCH_EXACTLY,              false);
-        hashMap.put(KEY_PERIODIC_FORM_UPDATES_CHECK, "never");
-        hashMap.put(KEY_AUTOMATIC_UPDATE,           false);
+        hashMap.put(KEY_PERIODIC_FORM_UPDATES_CHECK, "periodic_form_updates_check");
+        hashMap.put(KEY_AUTOMATIC_UPDATE,           true);
         hashMap.put(KEY_HIDE_OLD_FORM_VERSIONS,     true);
         hashMap.put(KEY_BACKGROUND_LOCATION,        true);
         // form_metadata_preferences.xml

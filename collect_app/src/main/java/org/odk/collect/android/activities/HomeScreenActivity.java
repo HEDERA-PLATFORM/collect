@@ -17,12 +17,13 @@ public class HomeScreenActivity extends CollectAbstractActivity {
     }
 
 
-
-
-
     public void SurveysIn(View view) {
         startActivity(new Intent(this, MainMenuActivity.class));
 
+    }
+
+    public void ScanQR (View view){
+        startActivity(new Intent(this, ScannerWithFlashlightActivity.class));
     }
 }
 
