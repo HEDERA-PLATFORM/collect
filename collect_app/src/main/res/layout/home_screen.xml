@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.MainMenuActivity">
+    tools:context=".activities.HomeScreenActivity">
 
 
     <LinearLayout
@@ -94,7 +94,7 @@
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:onClick="SurveysIn"
+            android:onClick="Tutorial"
             android:text="@string/main_tutorial"
             android:textAlignment="gravity"
             android:textSize="24sp"
@@ -139,6 +139,7 @@
             android:layout_marginTop="20dp"
             android:gravity="center"
             android:text="@string/main_htua"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:onClick="htua"/>
     </LinearLayout>
 </LinearLayout>

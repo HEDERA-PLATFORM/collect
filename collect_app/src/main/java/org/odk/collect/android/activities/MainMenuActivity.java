@@ -559,6 +559,9 @@ public class MainMenuActivity extends CollectAbstractActivity implements AdminPa
         ToastUtils.showShortToast(R.string.admin_password_incorrect);
     }
 
+    public void Tutorial(View view) {
+    }
+
     /*
      * Used to prevent memory leaks
      */
