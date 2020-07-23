@@ -1,5 +1,8 @@
 package org.odk.collect.android.preferences;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.mapbox.mapboxsdk.maps.Style;
+
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.utilities.QuestionFontSizeUtils;
@@ -54,7 +57,7 @@ public final class GeneralKeys {
     public static final String KEY_IMAGE_SIZE               = "image_size";
     public static final String KEY_GUIDANCE_HINT            = "guidance_hint";
     public static final String KEY_INSTANCE_SYNC            = "instance_sync";
-    public static final String KEY_MATCH_EXACTLY            = "match_exactly";
+    public static final String KEY_FORM_UPDATE_MODE         = "form_update_mode";
 
     // identity_preferences.xml
     public static final String KEY_ANALYTICS                = "analytics";
@@ -108,6 +111,7 @@ public final class GeneralKeys {
         hashMap.put(KEY_AUTOMATIC_UPDATE,           true);
         hashMap.put(KEY_HIDE_OLD_FORM_VERSIONS,     true);
         hashMap.put(KEY_BACKGROUND_LOCATION,        true);
+        hashMap.put(KEY_FORM_UPDATE_MODE,           "manual");
         // form_metadata_preferences.xml
         hashMap.put(KEY_METADATA_USERNAME,          "");
         hashMap.put(KEY_METADATA_PHONENUMBER,       "");
@@ -131,6 +135,10 @@ public final class GeneralKeys {
         hashMap.put(KEY_SPLASH_PATH,                Collect.getInstance().getString(R.string.default_splash_path));
         // map_preferences.xml
         hashMap.put(KEY_BASEMAP_SOURCE,             BASEMAP_SOURCE_GOOGLE);
+        hashMap.put(KEY_CARTO_MAP_STYLE,            "positron");
+        hashMap.put(KEY_USGS_MAP_STYLE,             "topographic");
+        hashMap.put(KEY_GOOGLE_MAP_STYLE,           String.valueOf(GoogleMap.MAP_TYPE_NORMAL));
+        hashMap.put(KEY_MAPBOX_MAP_STYLE,           Style.MAPBOX_STREETS);
         return hashMap;
     }
 
