@@ -112,6 +112,9 @@
     <string name="play_video">Play Video</string>
     <string name="please_wait">Please wait a few moments.</string>
     <string name="please_wait_long">Please wait. This could take a few minutes.</string>
+    <string name="question1">What´s HEDERA Collect?</string>
+    <string name="question2">How to download a survey?</string>
+    <string name="question3">How to fill a new survey?</string>
     <string name="quit_application">Exit %s</string>
     <string name="quit_entry">Save Form and Exit</string>
     <string name="refresh">Refresh</string>
@@ -136,6 +139,7 @@
     <string name="server_url">URL</string>
     <string name="server_preferences">Server Settings</string>
     <string name="trigger">OK. Please continue.</string>
+    <string name="tuto">About HEDERA Collect</string>
     <string name="uploading_data">Sending Form</string>
     <string name="url_error">Sorry, invalid URL!</string>
     <string name="username">Username</string>
