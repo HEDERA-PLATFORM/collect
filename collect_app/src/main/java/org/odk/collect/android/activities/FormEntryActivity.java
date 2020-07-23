@@ -56,11 +56,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.work.Constraints;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -80,6 +75,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.analytics.Analytics;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.audio.AudioControllerView;
+import org.odk.collect.android.backgroundwork.FormSubmitManager;
 import org.odk.collect.android.dao.FormsDao;
 import org.odk.collect.android.dao.helpers.ContentResolverHelper;
 import org.odk.collect.android.dao.helpers.FormsDaoHelper;
@@ -87,12 +83,12 @@ import org.odk.collect.android.dao.helpers.InstancesDaoHelper;
 import org.odk.collect.android.events.ReadPhoneStatePermissionRxEvent;
 import org.odk.collect.android.events.RxEventBus;
 import org.odk.collect.android.exception.JavaRosaException;
-import org.odk.collect.android.formentry.FormLoadingDialogFragment;
-import org.odk.collect.android.formentry.ODKView;
-import org.odk.collect.android.formentry.QuitFormDialogFragment;
 import org.odk.collect.android.formentry.FormEntryMenuDelegate;
 import org.odk.collect.android.formentry.FormEntryViewModel;
 import org.odk.collect.android.formentry.FormIndexAnimationHandler;
+import org.odk.collect.android.formentry.FormLoadingDialogFragment;
+import org.odk.collect.android.formentry.ODKView;
+import org.odk.collect.android.formentry.QuitFormDialogFragment;
 import org.odk.collect.android.formentry.audit.AuditEvent;
 import org.odk.collect.android.formentry.audit.AuditUtils;
 import org.odk.collect.android.formentry.audit.ChangesReasonPromptDialogFragment;
@@ -102,6 +98,7 @@ import org.odk.collect.android.formentry.backgroundlocation.BackgroundLocationMa
 import org.odk.collect.android.formentry.backgroundlocation.BackgroundLocationViewModel;
 import org.odk.collect.android.formentry.loading.FormInstanceFileCreator;
 import org.odk.collect.android.formentry.repeats.AddRepeatDialog;
+import org.odk.collect.android.formentry.repeats.DeleteRepeatDialogFragment;
 import org.odk.collect.android.formentry.saving.FormSaveViewModel;
 import org.odk.collect.android.formentry.saving.SaveFormProgressDialogFragment;
 import org.odk.collect.android.fragments.MediaLoadingFragment;
@@ -119,6 +116,7 @@ import org.odk.collect.android.listeners.SavePointListener;
 import org.odk.collect.android.listeners.WidgetValueChangedListener;
 import org.odk.collect.android.logic.FormInfo;
 import org.odk.collect.android.logic.ImmutableDisplayableQuestion;
+import org.odk.collect.android.logic.PropertyManager;
 import org.odk.collect.android.network.NetworkStateProvider;
 import org.odk.collect.android.preferences.AdminKeys;
 import org.odk.collect.android.preferences.AdminSharedPreferences;
@@ -150,6 +148,9 @@ import org.odk.collect.android.utilities.ToastUtils;
 import org.odk.collect.android.widgets.DateTimeWidget;
 import org.odk.collect.android.widgets.QuestionWidget;
 import org.odk.collect.android.widgets.RangeWidget;
+import org.odk.collect.android.widgets.interfaces.BinaryDataReceiver;
+import org.odk.collect.android.widgets.utilities.WaitingForDataRegistry;
+import org.odk.collect.android.widgets.utilities.FormControllerWaitingForDataRegistry;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -202,9 +203,8 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         CustomDatePickerDialog.CustomDatePickerDialogListener, RankingWidgetDialog.RankingListener,
         SaveFormIndexTask.SaveFormIndexListener, WidgetValueChangedListener,
         ScreenContext, FormLoadingDialogFragment.FormLoadingDialogFragmentListener,
-        AudioControllerView.SwipableParent,
-        FormIndexAnimationHandler.Listener,
-        QuitFormDialogFragment.Listener {
+        AudioControllerView.SwipableParent, FormIndexAnimationHandler.Listener,
+        QuitFormDialogFragment.Listener, DeleteRepeatDialogFragment.DeleteRepeatDialogCallback {
 
     // Defines for FormEntryActivity
     private static final boolean EXIT = true;
@@ -290,6 +290,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     MediaLoadingFragment mediaLoadingFragment;
     private FormEntryMenuDelegate menuDelegate;
     private FormIndexAnimationHandler formIndexAnimationHandler;
+    private WaitingForDataRegistry waitingForDataRegistry;
 
     @Override
     public void allowSwiping(boolean doSwipe) {
@@ -317,7 +318,10 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     StoragePathProvider storagePathProvider;
 
     @Inject
-    WorkManager workManager;
+    PropertyManager propertyManager;
+
+    @Inject
+    FormSubmitManager formSubmitManager;
 
     private final LocationProvidersReceiver locationProvidersReceiver = new LocationProvidersReceiver();
 
@@ -367,6 +371,8 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                 () -> getCurrentViewIfODKView().getAnswers(),
                 formIndexAnimationHandler
         );
+
+        waitingForDataRegistry = new FormControllerWaitingForDataRegistry();
 
         nextButton = findViewById(R.id.form_forward_button);
         nextButton.setOnClickListener(v -> {
@@ -758,9 +764,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         }
 
         if (resultCode == RESULT_CANCELED) {
-            if (getCurrentViewIfODKView() != null) {
-                getCurrentViewIfODKView().cancelWaitingForBinaryData();
-            }
+            waitingForDataRegistry.cancelWaitingForData();
             return;
         }
 
@@ -785,7 +789,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
             } else {
                 String sb = intent.getStringExtra(BARCODE_RESULT_KEY);
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(sb);
+                    setBinaryWidgetData(sb);
                 }
                 return;
             }
@@ -795,7 +799,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
             case RequestCodes.OSM_CAPTURE:
                 String osmFileName = intent.getStringExtra("OSM_FILE_NAME");
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(osmFileName);
+                    setBinaryWidgetData(osmFileName);
                 }
                 break;
             case RequestCodes.EX_STRING_CAPTURE:
@@ -806,7 +810,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                 if (exists) {
                     Object externalValue = intent.getExtras().get(key);
                     if (getCurrentViewIfODKView() != null) {
-                        getCurrentViewIfODKView().setBinaryData(externalValue);
+                        setBinaryWidgetData(externalValue);
                     }
                 }
                 break;
@@ -849,7 +853,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                 }
 
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(nf);
+                    setBinaryWidgetData(nf);
                 }
                 break;
             case RequestCodes.ALIGNED_IMAGE:
@@ -872,7 +876,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                 }
 
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(nf);
+                    setBinaryWidgetData(nf);
                 }
                 break;
             case RequestCodes.ARBITRARY_FILE_CHOOSER:
@@ -939,20 +943,20 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
             case RequestCodes.LOCATION_CAPTURE:
                 String sl = intent.getStringExtra(LOCATION_RESULT);
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(sl);
+                    setBinaryWidgetData(sl);
                 }
                 break;
             case RequestCodes.GEOSHAPE_CAPTURE:
             case RequestCodes.GEOTRACE_CAPTURE:
                 String gshr = intent.getStringExtra(ANSWER_KEY);
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(gshr);
+                    setBinaryWidgetData(gshr);
                 }
                 break;
             case RequestCodes.BEARING_CAPTURE:
                 String bearing = intent.getStringExtra(BEARING_RESULT);
                 if (getCurrentViewIfODKView() != null) {
-                    getCurrentViewIfODKView().setBinaryData(bearing);
+                    setBinaryWidgetData(bearing);
                 }
                 break;
         }
@@ -963,7 +967,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
 
         if (odkView != null) {
             for (QuestionWidget qw : odkView.getWidgets()) {
-                if (qw.isWaitingForData()) {
+                if (waitingForDataRegistry.isWaitingForData(qw.getFormEntryPrompt().getIndex())) {
                     return qw;
                 }
             }
@@ -979,9 +983,37 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         // then the widget copies the file and makes a new entry in the
         // content provider.
         if (getCurrentViewIfODKView() != null) {
-            getCurrentViewIfODKView().setBinaryData(media);
+            setBinaryWidgetData(media);
         }
         saveAnswersForCurrentScreen(DO_NOT_EVALUATE_CONSTRAINTS);
+    }
+
+    public void setBinaryWidgetData(Object data) {
+        ODKView currentViewIfODKView = getCurrentViewIfODKView();
+
+        if (currentViewIfODKView != null) {
+            boolean set = false;
+            for (QuestionWidget widget : currentViewIfODKView.getWidgets()) {
+                if (widget instanceof BinaryDataReceiver) {
+                    if (waitingForDataRegistry.isWaitingForData(widget.getFormEntryPrompt().getIndex())) {
+                        try {
+                            ((BinaryDataReceiver) widget).setBinaryData(data);
+                            waitingForDataRegistry.cancelWaitingForData();
+                        } catch (Exception e) {
+                            Timber.e(e);
+                            ToastUtils.showLongToast(currentViewIfODKView.getContext().getString(R.string.error_attaching_binary_file,
+                                    e.getMessage()));
+                        }
+                        set = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!set) {
+                Timber.w("Attempting to return data to a widget or set of widgets not looking for data");
+            }
+        }
     }
 
     /**
@@ -1136,7 +1168,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getItemId() == DELETE_REPEAT) {
-            createDeleteRepeatConfirmDialog();
+            DialogUtils.showIfNotShowing(DeleteRepeatDialogFragment.class, getSupportFragmentManager());
         } else {
             ODKView odkView = getCurrentViewIfODKView();
             if (odkView != null) {
@@ -1150,6 +1182,16 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public void deleteGroup() {
+        FormController formController = getFormController();
+        if (formController != null && !formController.indexIsInFieldList()) {
+            showNextView();
+        } else {
+            refreshCurrentView();
+        }
     }
 
     /**
@@ -1253,7 +1295,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     @NotNull
     private ODKView createODKView(boolean advancingPage, FormEntryPrompt[] prompts, FormEntryCaption[] groups) {
         odkViewLifecycle.start();
-        return new ODKView(this, prompts, groups, advancingPage);
+        return new ODKView(this, prompts, groups, advancingPage, waitingForDataRegistry);
     }
 
     @Override
@@ -1435,7 +1477,6 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         state = null;
         try {
             FormController formController = getFormController();
-
             if (saveBeforeNextView(formController)) {
                 return;
             }
@@ -1797,20 +1838,6 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     }
 
     /**
-     * Creates a confirm/cancel dialog for deleting repeats.
-     */
-    private void createDeleteRepeatConfirmDialog() {
-        DialogUtils.showDeleteRepeatConfirmDialog(this, () -> {
-            FormController formController = getFormController();
-            if (formController != null && !formController.indexIsInFieldList()) {
-                showNextView();
-            } else {
-                refreshCurrentView();
-            }
-        }, this::refreshCurrentView);
-    }
-
-    /**
      * Saves data and writes it to disk. If exit is set, program will exit after
      * save completes. Complete indicates whether the user has marked the
      * isntancs as complete. If updatedSaveName is non-null, the instances
@@ -1856,7 +1883,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                         // finalized specifies that it should always be auto-sent.
                         String formId = getFormController().getFormDef().getMainInstance().getRoot().getAttributeValue("", "id");
                         if (AutoSendWorker.formShouldBeAutoSent(formId, GeneralSharedPreferences.isAutoSendEnabled())) {
-                            requestAutoSend();
+                            formSubmitManager.scheduleSubmit();
                         }
                     }
 
@@ -2283,7 +2310,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
                     @Override
                     public void granted() {
                         readPhoneStatePermissionRequestNeeded = false;
-                        Collect.getInstance().initializeJavaRosa();
+                        propertyManager.reload();
                         loadForm();
                     }
 
@@ -2479,25 +2506,6 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     }
 
     /**
-     * Requests that unsent finalized forms be auto-sent. If no network connection is available,
-     * the work will be performed when a connection becomes available.
-     * <p>
-     * TODO: if the user changes auto-send settings, should an auto-send job immediately be enqueued?
-     */
-    private void requestAutoSend() {
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-        OneTimeWorkRequest autoSendWork =
-                new OneTimeWorkRequest.Builder(AutoSendWorker.class)
-                        .addTag(AutoSendWorker.TAG)
-                        .setConstraints(constraints)
-                        .build();
-        workManager.beginUniqueWork(AutoSendWorker.TAG,
-                ExistingWorkPolicy.KEEP, autoSendWork).enqueue();
-    }
-
-    /**
      * Returns the instance that was just filled out to the calling activity, if
      * requested.
      */
@@ -2639,7 +2647,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         ODKView odkView = getCurrentViewIfODKView();
         if (odkView != null) {
             QuestionWidget widgetGettingNewValue = getWidgetWaitingForBinaryData();
-            odkView.setBinaryData(date);
+            setBinaryWidgetData(date);
             widgetValueChanged(widgetGettingNewValue);
         }
     }
@@ -2649,7 +2657,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         ODKView odkView = getCurrentViewIfODKView();
         if (odkView != null) {
             QuestionWidget widgetGettingNewValue = getWidgetWaitingForBinaryData();
-            odkView.setBinaryData(items);
+            setBinaryWidgetData(items);
             widgetValueChanged(widgetGettingNewValue);
         }
     }
