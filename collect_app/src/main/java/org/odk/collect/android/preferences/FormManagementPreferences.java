@@ -70,9 +70,42 @@ public class FormManagementPreferences extends BasePreferenceFragment {
         boolean matchExactlyEnabled = generalSharedPreferences.getSharedPreferences()
                 .getBoolean(GeneralKeys.KEY_MATCH_EXACTLY, false);
 
+<<<<<<< Updated upstream
         findPreference(KEY_PERIODIC_FORM_UPDATES_CHECK).setEnabled(!matchExactlyEnabled);
         findPreference(KEY_AUTOMATIC_UPDATE).setEnabled(!matchExactlyEnabled);
         findPreference(KEY_HIDE_OLD_FORM_VERSIONS).setEnabled(!matchExactlyEnabled);
+=======
+    private void setupFormUpdateMode() {
+        SharedPreferences sharedPreferences = preferencesProvider.getGeneralSharedPreferences();
+        updateDisabledPrefs(sharedPreferences.getString(KEY_FORM_UPDATE_MODE, null), sharedPreferences.getString(KEY_PROTOCOL, null));
+
+        Preference formUpdateMode = findPreference(KEY_FORM_UPDATE_MODE);
+        formUpdateMode.setSummary(((ListPreference) formUpdateMode).getEntry());
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private void updateDisabledPrefs(String formUpdateMode, String protocol) {
+        if (Protocol.parse(getActivity(), protocol) == Protocol.GOOGLE) {
+            findPreference(KEY_FORM_UPDATE_MODE).setEnabled(true);
+            findPreference(KEY_AUTOMATIC_UPDATE).setEnabled(true);
+            findPreference(KEY_PERIODIC_FORM_UPDATES_CHECK).setEnabled(true);
+        } else {
+            switch (FormUpdateMode.parse(getActivity(), formUpdateMode)) {
+                case MANUAL:
+                    findPreference(KEY_AUTOMATIC_UPDATE).setEnabled(false);
+                    findPreference(KEY_PERIODIC_FORM_UPDATES_CHECK).setEnabled(false);
+                    break;
+                case PREVIOUSLY_DOWNLOADED_ONLY:
+                    findPreference(KEY_AUTOMATIC_UPDATE).setEnabled(false);
+                    findPreference(KEY_PERIODIC_FORM_UPDATES_CHECK).setEnabled(false);
+                    break;
+                case MATCH_EXACTLY:
+                    findPreference(KEY_AUTOMATIC_UPDATE).setEnabled(true);
+                    findPreference(KEY_PERIODIC_FORM_UPDATES_CHECK).setEnabled(true);
+                    break;
+            }
+        }
+>>>>>>> Stashed changes
     }
 
     private void initListPref(String key) {

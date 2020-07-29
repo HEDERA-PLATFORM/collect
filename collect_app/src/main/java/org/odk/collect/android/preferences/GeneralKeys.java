@@ -87,6 +87,7 @@ public final class GeneralKeys {
     public static final String BASEMAP_SOURCE_USGS          = "usgs";
     public static final String BASEMAP_SOURCE_STAMEN        = "stamen";
     public static final String BASEMAP_SOURCE_CARTO         = "carto";
+    private static String KEY_MATCH_EXACTLY;
 
     private static HashMap<String, Object> getHashMap() {
         HashMap<String, Object> hashMap = new HashMap<>();
@@ -95,7 +96,7 @@ public final class GeneralKeys {
         hashMap.put(KEY_USERNAME,                   "");
         hashMap.put(KEY_PASSWORD,                   "");
         // form_management_preferences.xml
-        hashMap.put(KEY_AUTOSEND,                   AUTOSEND_OFF);
+        hashMap.put(KEY_AUTOSEND,                   KEY_AUTOSEND_WIFI);
         hashMap.put(KEY_GUIDANCE_HINT,              GUIDANCE_HINT_OFF);
         hashMap.put(KEY_DELETE_AFTER_SEND,          false);
         hashMap.put(KEY_COMPLETED_DEFAULT,          true);
@@ -103,7 +104,7 @@ public final class GeneralKeys {
         hashMap.put(KEY_HIGH_RESOLUTION,            true);
         hashMap.put(KEY_IMAGE_SIZE,                 "original_image_size");
         hashMap.put(KEY_INSTANCE_SYNC,              true);
-        hashMap.put(KEY_MATCH_EXACTLY,              false);
+        hashMap.put(KEY_MATCH_EXACTLY,              true);
         hashMap.put(KEY_PERIODIC_FORM_UPDATES_CHECK, "periodic_form_updates_check");
         hashMap.put(KEY_AUTOMATIC_UPDATE,           true);
         hashMap.put(KEY_HIDE_OLD_FORM_VERSIONS,     true);
@@ -126,7 +127,7 @@ public final class GeneralKeys {
         hashMap.put(KEY_APP_THEME,                  Collect.getInstance().getString(R.string.app_theme_light));
         hashMap.put(KEY_APP_LANGUAGE,               "");
         hashMap.put(KEY_FONT_SIZE,                  String.valueOf(QuestionFontSizeUtils.DEFAULT_FONT_SIZE));
-        hashMap.put(KEY_NAVIGATION,                 NAVIGATION_SWIPE);
+        hashMap.put(KEY_NAVIGATION,                 NAVIGATION_BUTTONS);
         hashMap.put(KEY_SHOW_SPLASH,                false);
         hashMap.put(KEY_SPLASH_PATH,                Collect.getInstance().getString(R.string.default_splash_path));
         // map_preferences.xml
@@ -140,4 +141,7 @@ public final class GeneralKeys {
 
     }
 
+    public static void setKeyMatchExactly(String keyMatchExactly) {
+        KEY_MATCH_EXACTLY = keyMatchExactly;
+    }
 }
