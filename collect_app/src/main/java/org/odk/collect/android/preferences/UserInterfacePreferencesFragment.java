@@ -132,7 +132,7 @@ public class UserInterfacePreferencesFragment extends PreferenceFragmentCompat {
         if (pref != null) {
             pref.setSummary(pref.getEntry());
             pref.setOnPreferenceChangeListener((preference, newValue) -> {
-                int index = 0; //((ListPreference) preference).findIndexOfValue(newValue.toString());
+                int index = ((ListPreference) preference).findIndexOfValue(newValue.toString());
                 String entry = (String) ((ListPreference) preference).getEntries()[index];
                 preference.setSummary(entry);
                 return true;

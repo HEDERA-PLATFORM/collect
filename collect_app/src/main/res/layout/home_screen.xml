@@ -27,8 +27,7 @@
             android:gravity="center"
             android:text="@string/app_name"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/josefinb"/>
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -47,14 +46,11 @@
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            android:textAlignment="textStart"
-            android:layout_marginLeft="15dp"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/jsregular"
             android:onClick="SurveysIn"
             android:text="@string/main_survey"
+            android:textAlignment="gravity"
+            android:textSize="24sp"
+            android:textStyle="bold"
             tools:ignore="OnClick" />
     </LinearLayout>
 
@@ -74,14 +70,11 @@
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
             android:onClick="ScanQR"
             android:text="@string/main_setup"
-            android:textAlignment="textStart"
-            android:layout_marginLeft="15dp"
+            android:textAlignment="gravity"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:fontFamily="@font/jsregular"
             tools:ignore="OnClick" />
     </LinearLayout>
 
@@ -101,14 +94,11 @@
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
             android:onClick="Tutorial"
             android:text="@string/main_tutorial"
-            android:textAlignment="textStart"
-            android:layout_marginLeft="15dp"
+            android:textAlignment="gravity"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:fontFamily="@font/jsregular"
             tools:ignore="OnClick" />
     </LinearLayout>
 
@@ -128,14 +118,11 @@
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
             android:onClick="SurveysIn"
             android:text="@string/main_info"
-            android:textAlignment="textStart"
-            android:layout_marginLeft="15dp"
+            android:textAlignment="gravity"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:fontFamily="@font/jsregular"
             tools:ignore="OnClick" />
     </LinearLayout>
 
@@ -153,7 +140,6 @@
             android:gravity="center"
             android:text="@string/main_htua"
             android:textSize="18sp"
-            android:onClick="htua"
-            android:fontFamily="@font/jsregular"/>
+            android:onClick="htua"/>
     </LinearLayout>
 </LinearLayout>
