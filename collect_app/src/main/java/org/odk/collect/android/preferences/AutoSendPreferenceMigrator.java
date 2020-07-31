@@ -43,7 +43,7 @@ public class AutoSendPreferenceMigrator {
 
     public static void migrate(Map<String, ?> entries) {
 
-        boolean autoSendWifi = false;
+        boolean autoSendWifi = true;
         if (entries.containsKey(KEY_AUTOSEND_WIFI)) {
             Object value = entries.get(KEY_AUTOSEND_WIFI);
             if (value instanceof Boolean) {
@@ -52,7 +52,7 @@ public class AutoSendPreferenceMigrator {
             }
         }
 
-        boolean autoSendNetwork = false;
+        boolean autoSendNetwork = true;
         if (entries.containsKey(KEY_AUTOSEND_NETWORK)) {
             Object value = entries.get(KEY_AUTOSEND_NETWORK);
             if (value instanceof Boolean) {
