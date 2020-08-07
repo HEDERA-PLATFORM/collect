@@ -14,11 +14,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import static android.provider.BaseColumns._ID;
 import static org.odk.collect.android.dao.FormsDao.getFormsFromCursor;
+import static org.odk.collect.android.provider.FormsProviderAPI.FormsColumns.DELETED;
 import static org.odk.collect.android.provider.FormsProviderAPI.FormsColumns.JR_FORM_ID;
+import static org.odk.collect.android.provider.FormsProviderAPI.FormsColumns.JR_VERSION;
 import static org.odk.collect.android.provider.FormsProviderAPI.FormsColumns.LAST_DETECTED_FORM_VERSION_HASH;
 
-public class DatabaseFormRepository implements FormRepository {
+public class DatabaseFormsRepository implements FormsRepository {
 
     @Override
     public boolean contains(String jrFormId) {
@@ -31,6 +34,22 @@ public class DatabaseFormRepository implements FormRepository {
     public List<Form> getAll() {
         try (Cursor cursor = new FormsDao().getFormsCursor()) {
             return new FormsDao().getFormsFromCursor(cursor);
+        }
+    }
+
+    @Nullable
+    @Override
+    public Form get(Long id) {
+        return queryForForm(_ID + "=?", new String[]{id.toString()});
+    }
+
+    @Nullable
+    @Override
+    public Form get(String jrFormId, @Nullable String jrVersion) {
+        if (jrVersion != null) {
+            return queryForForm(JR_FORM_ID + "=? AND " + JR_VERSION + "=?", new String[]{jrFormId, jrVersion});
+        } else {
+            return queryForForm(JR_FORM_ID + "=? AND " + JR_VERSION + " IS NULL", new String[]{jrFormId});
         }
     }
 
@@ -83,6 +102,13 @@ public class DatabaseFormRepository implements FormRepository {
     }
 
     @Override
+    public void softDelete(Long id) {
+        ContentValues values = new ContentValues();
+        values.put(DELETED, 1);
+        new FormsDao().updateForm(values, _ID + "=?", new String[]{id.toString()});
+    }
+
+    @Override
     public void setLastDetectedUpdated(String jrFormId, String formHash, String manifestHash) {
         String formVersionHash = MultiFormDownloader.getMd5Hash(formHash) + manifestHash;
 
@@ -113,6 +139,13 @@ public class DatabaseFormRepository implements FormRepository {
         }
 
         formsDao.deleteFormsFromIDs(idsToDelete.toArray(new String[idsToDelete.size()]));
+    }
+
+    @Nullable
+    private Form queryForForm(String selection, String[] selectionArgs) {
+        try (Cursor cursor = new FormsDao().getFormsCursor(selection, selectionArgs)) {
+            return getFormOrNull(cursor);
+        }
     }
 
     private Form getFormOrNull(Cursor cursor) {
