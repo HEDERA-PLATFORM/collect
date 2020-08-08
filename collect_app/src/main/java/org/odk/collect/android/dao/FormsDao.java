@@ -53,7 +53,7 @@ public class FormsDao {
         return Collect.getInstance().getContentResolver().query(uri, null, null, null, null);
     }
 
-    public Cursor getFormsCursor(String formId, String formVersion) {
+    public Cursor getFormsCursorSortedByDateDesc(String formId, String formVersion) {
         String[] selectionArgs;
         String selection;
 
@@ -74,10 +74,6 @@ public class FormsDao {
         return getFormsCursor(null, selection, selectionArgs, order);
     }
 
-    private CursorLoader getFormsCursorLoader(String sortOrder, boolean newestByFormId) {
-        return getFormsCursorLoader(null, null, sortOrder, newestByFormId);
-    }
-
     /**
      * Returns a loader filtered by the specified charSequence in the specified sortOrder. If
      * newestByFormId is true, only the most recently-downloaded version of each form is included.
@@ -86,9 +82,9 @@ public class FormsDao {
         CursorLoader cursorLoader;
 
         if (charSequence.length() == 0) {
-            cursorLoader = getFormsCursorLoader(sortOrder, newestByFormId);
+            cursorLoader = getFormsCursorLoader(FormsColumns.DELETED + " = 0", new String[]{}, sortOrder, newestByFormId);
         } else {
-            String selection = FormsColumns.DISPLAY_NAME + " LIKE ?";
+            String selection = FormsColumns.DISPLAY_NAME + " LIKE ? AND " + FormsColumns.DELETED + " = 0";
             String[] selectionArgs = {"%" + charSequence + "%"};
 
             cursorLoader = getFormsCursorLoader(selection, selectionArgs, sortOrder, newestByFormId);
@@ -121,7 +117,7 @@ public class FormsDao {
     public String getFormTitleForFormIdAndFormVersion(String formId, String formVersion) {
         String formTitle = "";
 
-        Cursor cursor = getFormsCursor(formId, formVersion);
+        Cursor cursor = getFormsCursorSortedByDateDesc(formId, formVersion);
         if (cursor != null) {
             try {
                 if (cursor.moveToFirst()) {
@@ -138,7 +134,7 @@ public class FormsDao {
     public boolean isFormEncrypted(String formId, String formVersion) {
         boolean encrypted = false;
 
-        Cursor cursor = getFormsCursor(formId, formVersion);
+        Cursor cursor = getFormsCursorSortedByDateDesc(formId, formVersion);
         if (cursor != null) {
             try {
                 if (cursor.moveToFirst()) {
@@ -155,7 +151,7 @@ public class FormsDao {
     public String getFormMediaPath(String formId, String formVersion) {
         String formMediaPath = null;
 
-        Cursor cursor = getFormsCursor(formId, formVersion);
+        Cursor cursor = getFormsCursorSortedByDateDesc(formId, formVersion);
 
         if (cursor != null) {
             try {
@@ -250,13 +246,13 @@ public class FormsDao {
                             .description(cursor.getString(descriptionColumnIndex))
                             .jrFormId(cursor.getString(jrFormIdColumnIndex))
                             .jrVersion(cursor.getString(jrVersionColumnIndex))
-                            .formFilePath(cursor.getString(formFilePathColumnIndex))
+                            .formFilePath(new StoragePathProvider().getFormDbPath(cursor.getString(formFilePathColumnIndex)))
                             .submissionUri(cursor.getString(submissionUriColumnIndex))
                             .base64RSAPublicKey(cursor.getString(base64RSAPublicKeyColumnIndex))
                             .md5Hash(cursor.getString(md5HashColumnIndex))
                             .date(cursor.getLong(dateColumnIndex))
-                            .jrCacheFilePath(cursor.getString(jrCacheFilePathColumnIndex))
-                            .formMediaPath(cursor.getString(formMediaPathColumnIndex))
+                            .jrCacheFilePath(new StoragePathProvider().getCacheDbPath(cursor.getString(jrCacheFilePathColumnIndex)))
+                            .formMediaPath(new StoragePathProvider().getFormDbPath(cursor.getString(formMediaPathColumnIndex)))
                             .language(cursor.getString(languageColumnIndex))
                             .autoSend(cursor.getString(autoSendColumnIndex))
                             .autoDelete(cursor.getString(autoDeleteColumnIndex))
