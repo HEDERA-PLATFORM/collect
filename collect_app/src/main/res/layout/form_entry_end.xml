@@ -11,6 +11,7 @@ the specific language governing permissions and limitations under the License.
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true"
     android:orientation="vertical">
 
@@ -65,13 +66,32 @@ the specific language governing permissions and limitations under the License.
             android:layout_marginBottom="10dp"
             android:text="@string/mark_finished"
             android:textSize="21sp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="84dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:id="@+id/logo_save"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:srcCompat="@drawable/logo_save"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/save_exit_button"
             style="@style/Widget.Collect.Button.FullWidth"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/quit_entry" />
+            android:layout_marginTop="20dp"
+            android:text="@string/quit_entry"
+            android:layout_gravity="center_horizontal"
+            android:background="#FFFFFF"
+            android:backgroundTint="#FFFFFF"
+            android:fontFamily="@font/jsregular"
+            android:gravity="start|center_vertical"
+            />
+    </LinearLayout>
 
         <View
             android:layout_width="match_parent"

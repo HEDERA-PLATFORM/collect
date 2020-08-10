@@ -34,19 +34,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp">
 
         <ImageView
             android:id="@+id/logo_survey"
-            android:layout_width="100dp"
-            android:layout_height="80dp"
-            app:srcCompat="@drawable/survey_logo" />
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            app:srcCompat="@drawable/survey_logo"
+            android:layout_marginTop="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_survey"
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="30dp"
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:backgroundTint="#FFFFFF"
@@ -63,19 +65,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp">
 
         <ImageView
             android:id="@+id/logo_setup"
-            android:layout_width="100dp"
-            android:layout_height="80dp"
-            app:srcCompat="@drawable/setup_logo" />
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            app:srcCompat="@drawable/setup_logo"
+            android:layout_marginTop="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_setup"
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="30dp"
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:backgroundTint="#FFFFFF"
@@ -92,19 +96,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp">
 
         <ImageView
             android:id="@+id/logo_tutorial"
-            android:layout_width="100dp"
-            android:layout_height="80dp"
-            app:srcCompat="@drawable/logo_tutorial" />
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            app:srcCompat="@drawable/logo_tutorial"
+            android:layout_marginTop="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_tutorial"
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="30dp"
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:backgroundTint="#FFFFFF"
@@ -121,19 +127,21 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp">
 
         <ImageView
             android:id="@+id/logo_info"
-            android:layout_width="100dp"
-            android:layout_height="80dp"
-            app:srcCompat="@drawable/info_logo" />
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            app:srcCompat="@drawable/info_logo"
+            android:layout_marginTop="10dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_info"
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="30dp"
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:backgroundTint="#FFFFFF"
