@@ -68,7 +68,7 @@ public class FormManagementPreferences extends BasePreferenceFragment {
         initGuidancePrefs();
 
         boolean matchExactlyEnabled = generalSharedPreferences.getSharedPreferences()
-                .getBoolean(GeneralKeys.KEY_MATCH_EXACTLY, false);
+                .getBoolean(GeneralKeys.KEY_MATCH_EXACTLY, true);
 
         findPreference(KEY_PERIODIC_FORM_UPDATES_CHECK).setEnabled(!matchExactlyEnabled);
         findPreference(KEY_AUTOMATIC_UPDATE).setEnabled(!matchExactlyEnabled);
@@ -120,7 +120,7 @@ public class FormManagementPreferences extends BasePreferenceFragment {
                 pref.setOnPreferenceChangeListener((preference, newValue) -> {
                     analytics.logEvent(AUTO_FORM_UPDATE_PREF_CHANGE, "Automatic form updates", newValue + " " + formUpdateCheckPeriod);
 
-                    return false;
+                    return true;
                 });
             }
         }
@@ -129,7 +129,7 @@ public class FormManagementPreferences extends BasePreferenceFragment {
     private void initGuidancePrefs() {
         final ListPreference guidance = (ListPreference) findPreference(KEY_GUIDANCE_HINT);
 
-        if (guidance == null) {
+        if (guidance != null) {
             return;
         }
 

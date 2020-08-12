@@ -20,20 +20,20 @@ public class AutoSendPreferenceMigrator {
 
     public static void migrate() {
 
-        boolean autoSendWifi = GeneralSharedPreferences.getInstance().getBoolean(KEY_AUTOSEND_WIFI, false);
-        boolean autoSendNetwork = GeneralSharedPreferences.getInstance().getBoolean(KEY_AUTOSEND_NETWORK, false);
+        boolean autoSendWifi = GeneralSharedPreferences.getInstance().getBoolean(KEY_AUTOSEND_WIFI, true);
+        boolean autoSendNetwork = GeneralSharedPreferences.getInstance().getBoolean(KEY_AUTOSEND_NETWORK, true);
 
         migrate(autoSendWifi, autoSendNetwork);
     }
 
     public static void migrate(JSONObject generalPrefsJson) throws JSONException {
 
-        boolean autoSendWifi = false;
+        boolean autoSendWifi = true;
         if (generalPrefsJson.has(KEY_AUTOSEND_WIFI)) {
             autoSendWifi = true;
         }
 
-        boolean autoSendNetwork = false;
+        boolean autoSendNetwork = true;
         if (generalPrefsJson.has(KEY_AUTOSEND_NETWORK)) {
             autoSendNetwork = true;
         }
