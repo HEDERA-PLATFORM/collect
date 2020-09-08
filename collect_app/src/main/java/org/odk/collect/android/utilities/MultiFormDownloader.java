@@ -24,7 +24,7 @@ import org.kxml2.kdom.Element;
 import org.odk.collect.android.R;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.formmanagement.ServerFormDetails;
-import org.odk.collect.android.forms.DatabaseFormsRepository;
+import org.odk.collect.android.database.DatabaseFormsRepository;
 import org.odk.collect.android.forms.Form;
 import org.odk.collect.android.forms.FormsRepository;
 import org.odk.collect.android.listeners.FormDownloaderListener;
@@ -292,22 +292,25 @@ public class MultiFormDownloader {
         final Uri uri;
         final String formFilePath = formFile.getAbsolutePath();
         String mediaPath = FileUtils.constructMediaPath(formFilePath);
-        final boolean isNew;
 
         FileUtils.checkMediaPath(new File(mediaPath));
 
 
         Form form = formsRepository.getByPath(formFile.getAbsolutePath());
-        isNew = form == null;
 
-        if (isNew) {
+        if (form == null) {
             uri = saveNewForm(formInfo, formFile, mediaPath);
+            return new UriResult(uri, mediaPath, true);
         } else {
             uri = Uri.withAppendedPath(FormsColumns.CONTENT_URI, form.getId().toString());
             mediaPath = new StoragePathProvider().getAbsoluteFormFilePath(form.getFormMediaPath());
-        }
 
-        return new UriResult(uri, mediaPath, isNew);
+            if (form.isDeleted()) {
+                formsRepository.restore(form.getId());
+            }
+
+            return new UriResult(uri, mediaPath, false);
+        }
     }
 
     private Uri saveNewForm(Map<String, String> formInfo, File formFile, String mediaPath) {

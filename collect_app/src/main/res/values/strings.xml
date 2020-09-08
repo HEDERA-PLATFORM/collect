@@ -183,7 +183,6 @@
     <string name="parent_form_not_present">Unable to edit this saved form because the corresponding blank form is not present or was deleted.\n\nForm ID: %1$s</string>
     <string name="launch_app">Launch</string>
     <string name="no_app">The requested application is missing. Please manually enter the reading.</string>
-    <string name="select_one">Select One Answer</string>
     <string name="savepoint_used">Unsaved changes recovered from savepoint!</string>
     <string name="save_and_close">Save and Close</string>
     <string name="sign_button">Gather Signature</string>
@@ -393,7 +392,6 @@
     <string name="record_geopoint">Record a point</string>
     <string name="gps_result">Latitude: %1$s\nLongitude: %2$s\nAltitude: %3$sm\nAccuracy: %4$sm</string>
     <string name="parser_exception">XPathParser Exception: \"%s\"</string>
-    <string name="selected_answer">Selected: %s</string>
     <string name="version_number">Version: %s</string>
     <string name="id_number">ID: %s</string>
     <string name="odk_website">Visit the ODK website</string>
@@ -635,7 +633,7 @@
     <string name="app_theme">Theme</string>
     <string name="theme_light">Light theme</string>
     <string name="theme_dark">Dark theme</string>
-    <string name="theme_magenta">Magenta theme (experimental)</string>
+    <string name="theme_magenta">Magenta theme</string>
     <string name="cannot_create_directory">Cannot create directory: %s</string>
     <string name="not_a_directory">%s exists, but is not a directory</string>
     <string name="location_metadata">Satellites available: %1$d/24\n\nTime elapsed: %2$s</string>
@@ -697,11 +695,12 @@
     <string name="legacy_custom_server_paths_summary">Will be removed in a future version. Please use /formList and /submission on your server.</string>
     <string name="experimental">Experimental</string>
     <string name="match_exactly">Exactly match server</string>
-    <string name="manually">Manually</string>
+    <string name="manual">Manual</string>
     <string name="form_update_mode_title">Blank form update mode</string>
     <string name="previously_downloaded_only">Previously downloaded forms only</string>
     <string name="form_update_frequency_title">Automatic update frequency</string>
     <string name="form_update_error">Form update failed</string>
     <string name="report_to_project_lead">If you keep having this problem, report it to the person who asked you to collect data.</string>
     <string name="unknown_host_error">Collect can\'t reach the server at %s. Did you enter the URL correctly?</string>
+    <string name="form_update_succeeded">Form update succeeded</string>
 </resources>

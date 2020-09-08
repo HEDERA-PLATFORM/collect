@@ -55,6 +55,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -65,6 +66,7 @@ import org.javarosa.core.model.FormDef;
 import org.javarosa.core.model.FormIndex;
 import org.javarosa.core.model.SelectChoice;
 import org.javarosa.core.model.data.IAnswerData;
+import org.javarosa.core.model.data.helper.Selection;
 import org.javarosa.core.model.instance.TreeElement;
 import org.javarosa.form.api.FormEntryCaption;
 import org.javarosa.form.api.FormEntryController;
@@ -76,7 +78,6 @@ import org.odk.collect.android.analytics.Analytics;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.audio.AudioControllerView;
 import org.odk.collect.android.backgroundwork.FormSubmitManager;
-import org.odk.collect.android.instancemanagement.InstanceSubmitter;
 import org.odk.collect.android.dao.FormsDao;
 import org.odk.collect.android.dao.helpers.ContentResolverHelper;
 import org.odk.collect.android.dao.helpers.FormsDaoHelper;
@@ -102,12 +103,14 @@ import org.odk.collect.android.formentry.repeats.AddRepeatDialog;
 import org.odk.collect.android.formentry.repeats.DeleteRepeatDialogFragment;
 import org.odk.collect.android.formentry.saving.FormSaveViewModel;
 import org.odk.collect.android.formentry.saving.SaveFormProgressDialogFragment;
+import org.odk.collect.android.forms.FormsRepository;
 import org.odk.collect.android.fragments.MediaLoadingFragment;
 import org.odk.collect.android.fragments.dialogs.CustomDatePickerDialog;
 import org.odk.collect.android.fragments.dialogs.LocationProvidersDisabledDialog;
 import org.odk.collect.android.fragments.dialogs.NumberPickerDialog;
 import org.odk.collect.android.fragments.dialogs.ProgressDialogFragment;
 import org.odk.collect.android.fragments.dialogs.RankingWidgetDialog;
+import org.odk.collect.android.fragments.dialogs.SelectMinimalDialog;
 import org.odk.collect.android.javarosawrapper.FormController;
 import org.odk.collect.android.javarosawrapper.FormController.FailedConstraint;
 import org.odk.collect.android.listeners.AdvanceToNextListener;
@@ -174,7 +177,6 @@ import static android.content.DialogInterface.BUTTON_NEGATIVE;
 import static android.content.DialogInterface.BUTTON_POSITIVE;
 import static android.view.animation.AnimationUtils.loadAnimation;
 import static org.javarosa.form.api.FormEntryController.EVENT_PROMPT_NEW_REPEAT;
-import static org.odk.collect.android.analytics.AnalyticsEvents.LAUNCH_FORM_WITH_BG_LOCATION;
 import static org.odk.collect.android.analytics.AnalyticsEvents.SAVE_INCOMPLETE;
 import static org.odk.collect.android.fragments.BarcodeWidgetScannerFragment.BARCODE_RESULT_KEY;
 import static org.odk.collect.android.preferences.AdminKeys.KEY_MOVING_BACKWARDS;
@@ -204,7 +206,8 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         SaveFormIndexTask.SaveFormIndexListener, WidgetValueChangedListener,
         ScreenContext, FormLoadingDialogFragment.FormLoadingDialogFragmentListener,
         AudioControllerView.SwipableParent, FormIndexAnimationHandler.Listener,
-        QuitFormDialogFragment.Listener, DeleteRepeatDialogFragment.DeleteRepeatDialogCallback {
+        QuitFormDialogFragment.Listener, DeleteRepeatDialogFragment.DeleteRepeatDialogCallback,
+        SelectMinimalDialog.SelectMinimalDialogListener {
 
     // Defines for FormEntryActivity
     private static final boolean EXIT = true;
@@ -323,6 +326,9 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     @Inject
     FormSubmitManager formSubmitManager;
 
+    @Inject
+    FormsRepository formsRepository;
+
     private final LocationProvidersReceiver locationProvidersReceiver = new LocationProvidersReceiver();
 
     /**
@@ -347,8 +353,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
         setupViewModels();
         setContentView(R.layout.form_entry);
 
-        compositeDisposable
-                .add(eventBus
+        compositeDisposable.add(eventBus
                         .register(ReadPhoneStatePermissionRxEvent.class)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -456,9 +461,8 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
             }
         });
 
-        formSaveViewModel = ViewModelProviders
-                .of(this, new FormSaveViewModel.Factory(analytics))
-                .get(FormSaveViewModel.class);
+        FormSaveViewModel.Factory factory = new FormSaveViewModel.Factory(this, null, analytics);
+        formSaveViewModel = new ViewModelProvider(this, factory).get(FormSaveViewModel.class);
 
         formSaveViewModel.getSaveResult().observe(this, this::handleSaveResult);
     }
@@ -1041,11 +1045,6 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     public boolean onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menuDelegate.onPrepareOptionsMenu(menu);
-
-        if (getFormController() != null && getFormController().currentFormCollectsBackgroundLocation()
-                && new PlayServicesChecker().isGooglePlayServicesAvailable(this)) {
-            analytics.logEvent(LAUNCH_FORM_WITH_BG_LOCATION, getFormController().getCurrentFormIdentifierHash());
-        }
         return true;
     }
 
@@ -1295,7 +1294,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
     @NotNull
     private ODKView createODKView(boolean advancingPage, FormEntryPrompt[] prompts, FormEntryCaption[] groups) {
         odkViewLifecycle.start();
-        return new ODKView(this, prompts, groups, advancingPage, waitingForDataRegistry);
+        return new ODKView(this, prompts, groups, advancingPage, formSaveViewModel, waitingForDataRegistry);
     }
 
     @Override
@@ -1879,12 +1878,7 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
 
                 if (result.getRequest().viewExiting()) {
                     if (result.getRequest().shouldFinalize()) {
-                        // Request auto-send if app-wide auto-send is enabled or the form that was just
-                        // finalized specifies that it should always be auto-sent.
-                        String formId = getFormController().getFormDef().getMainInstance().getRoot().getAttributeValue("", "id");
-                        if (InstanceSubmitter.formShouldBeAutoSent(formId, GeneralSharedPreferences.isAutoSendEnabled())) {
-                            formSubmitManager.scheduleSubmit();
-                        }
+                        formSubmitManager.scheduleSubmit();
                     }
 
                     finishAndReturnInstance();
@@ -2654,6 +2648,20 @@ public class FormEntryActivity extends CollectAbstractActivity implements Animat
 
     @Override
     public void onRankingChanged(List<SelectChoice> items) {
+        ODKView odkView = getCurrentViewIfODKView();
+        if (odkView != null) {
+            QuestionWidget widgetGettingNewValue = getWidgetWaitingForBinaryData();
+            setBinaryWidgetData(items);
+            widgetValueChanged(widgetGettingNewValue);
+        }
+    }
+
+    /*
+     *TODO: this is not an ideal way to solve communication between a dialog created by a widget and the widget.
+     * Instead we should use viewmodels: https://github.com/getodk/collect/pull/3964#issuecomment-670155433
+     */
+    @Override
+    public void updateSelectedItems(List<Selection> items) {
         ODKView odkView = getCurrentViewIfODKView();
         if (odkView != null) {
             QuestionWidget widgetGettingNewValue = getWidgetWaitingForBinaryData();
