@@ -33,15 +33,18 @@ import org.odk.collect.android.formentry.QuitFormDialogFragment;
 import org.odk.collect.android.formentry.saving.SaveFormProgressDialogFragment;
 import org.odk.collect.android.fragments.BarCodeScannerFragment;
 import org.odk.collect.android.fragments.BlankFormListFragment;
-import org.odk.collect.android.fragments.SavedFormListFragment;
 import org.odk.collect.android.fragments.MapBoxInitializationFragment;
+import org.odk.collect.android.fragments.SavedFormListFragment;
+import org.odk.collect.android.fragments.dialogs.SelectMinimalDialog;
 import org.odk.collect.android.geo.GoogleMapFragment;
 import org.odk.collect.android.geo.MapboxMapFragment;
 import org.odk.collect.android.geo.OsmDroidMapFragment;
 import org.odk.collect.android.logic.PropertyManager;
 import org.odk.collect.android.openrosa.OpenRosaHttpInterface;
 import org.odk.collect.android.preferences.AdminPasswordDialogFragment;
+import org.odk.collect.android.preferences.AdminPreferencesFragment;
 import org.odk.collect.android.preferences.AdminSharedPreferences;
+import org.odk.collect.android.preferences.BasePreferenceFragment;
 import org.odk.collect.android.preferences.ExperimentalPreferencesFragment;
 import org.odk.collect.android.preferences.FormManagementPreferences;
 import org.odk.collect.android.preferences.FormMetadataFragment;
@@ -200,6 +203,8 @@ public interface AppDependencyComponent {
 
     void inject(ServerAuthDialogFragment serverAuthDialogFragment);
 
+    void inject(BasePreferenceFragment basePreferenceFragment);
+
     void inject(BlankFormListFragment blankFormListFragment);
 
     void inject(InstanceUploaderActivity instanceUploaderActivity);
@@ -207,6 +212,10 @@ public interface AppDependencyComponent {
     void inject(GeneralPreferencesFragment generalPreferencesFragment);
 
     void inject(DeleteSavedFormActivity deleteSavedFormActivity);
+
+    void inject(AdminPreferencesFragment.MainMenuAccessPreferences mainMenuAccessPreferences);
+
+    void inject(SelectMinimalDialog selectMinimalDialog);
 
     OpenRosaHttpInterface openRosaHttpInterface();
 

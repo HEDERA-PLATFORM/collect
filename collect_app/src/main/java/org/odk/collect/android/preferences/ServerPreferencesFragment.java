@@ -37,7 +37,7 @@ import androidx.preference.Preference;
 import org.jetbrains.annotations.NotNull;
 import org.odk.collect.android.R;
 import org.odk.collect.android.analytics.Analytics;
-import org.odk.collect.android.formmanagement.FormUpdateMode;
+import org.odk.collect.android.backgroundwork.FormUpdateManager;
 import org.odk.collect.android.injection.DaggerUtils;
 import org.odk.collect.android.listeners.OnBackPressedListener;
 import org.odk.collect.android.listeners.PermissionListener;
@@ -59,15 +59,12 @@ import java.util.Locale;
 import javax.inject.Inject;
 
 import static android.app.Activity.RESULT_OK;
-import static org.odk.collect.android.analytics.AnalyticsEvents.SET_CUSTOM_ENDPOINT;
 import static org.odk.collect.android.analytics.AnalyticsEvents.SET_FALLBACK_SHEETS_URL;
 import static org.odk.collect.android.analytics.AnalyticsEvents.SET_SERVER;
 import static org.odk.collect.android.preferences.GeneralKeys.KEY_FORMLIST_URL;
-import static org.odk.collect.android.preferences.GeneralKeys.KEY_FORM_UPDATE_MODE;
 import static org.odk.collect.android.preferences.GeneralKeys.KEY_PROTOCOL;
 import static org.odk.collect.android.preferences.GeneralKeys.KEY_SELECTED_GOOGLE_ACCOUNT;
 import static org.odk.collect.android.preferences.GeneralKeys.KEY_SUBMISSION_URL;
-import static org.odk.collect.android.preferences.PreferencesActivity.INTENT_KEY_ADMIN_MODE;
 import static org.odk.collect.android.utilities.DialogUtils.showDialog;
 
 public class ServerPreferencesFragment extends BasePreferenceFragment implements View.OnTouchListener, OnBackPressedListener {
@@ -85,24 +82,24 @@ public class ServerPreferencesFragment extends BasePreferenceFragment implements
     @Inject
     PreferencesProvider preferencesProvider;
 
+    @Inject
+    FormUpdateManager formUpdateManager;
+
     private ListPopupWindow listPopupWindow;
     private Preference selectedGoogleAccountPreference;
     private boolean allowClickSelectedGoogleAccountPreference = true;
 
-    public static ServerPreferencesFragment newInstance(boolean adminMode) {
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(INTENT_KEY_ADMIN_MODE, adminMode);
+    @Override
+    public void onAttach(@NotNull Context context) {
+        super.onAttach(context);
+        DaggerUtils.getComponent(context).inject(this);
 
-        ServerPreferencesFragment serverPreferencesFragment = new ServerPreferencesFragment();
-        serverPreferencesFragment.setArguments(bundle);
-
-        return serverPreferencesFragment;
+        ((PreferencesActivity) context).setOnBackPressedListener(this);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.server_preferences);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.server_preferences, rootKey);
         initProtocolPrefs();
     }
 
@@ -127,15 +124,6 @@ public class ServerPreferencesFragment extends BasePreferenceFragment implements
                     getPreferenceScreen().removeAll();
                     addPreferencesFromResource(R.xml.server_preferences);
                     initProtocolPrefs();
-                    removeDisabledPrefs();
-                }
-
-                switch (Protocol.parse(getActivity(), (String) newValue)) {
-                    case GOOGLE:
-                        preferencesProvider.getGeneralSharedPreferences().edit()
-                                .putString(KEY_FORM_UPDATE_MODE, FormUpdateMode.MANUAL.getValue(getActivity()))
-                                .apply();
-                        break;
                 }
             }
             return true;
@@ -150,14 +138,6 @@ public class ServerPreferencesFragment extends BasePreferenceFragment implements
                 addGooglePreferences();
                 break;
         }
-    }
-
-    @Override
-    public void onAttach(@NotNull Context context) {
-        super.onAttach(context);
-        DaggerUtils.getComponent(context).inject(this);
-
-        ((PreferencesActivity) context).setOnBackPressedListener(this);
     }
 
     public void addAggregatePreferences() {
@@ -355,10 +335,6 @@ public class ServerPreferencesFragment extends BasePreferenceFragment implements
                 case KEY_FORMLIST_URL:
                 case KEY_SUBMISSION_URL:
                     preference.setSummary(newValue.toString());
-
-                    String customEndpointId = FileUtils.getMd5Hash(new ByteArrayInputStream(newValue.toString().getBytes()));
-                    String action = preference.getKey() + " " + customEndpointId;
-                    analytics.logEvent(SET_CUSTOM_ENDPOINT, action);
                     break;
             }
             return true;

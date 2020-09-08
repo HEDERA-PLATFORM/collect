@@ -4,13 +4,14 @@ import android.net.Uri;
 
 import org.odk.collect.android.forms.Form;
 import org.odk.collect.android.forms.FormsRepository;
-import org.odk.collect.android.utilities.MultiFormDownloader;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
+
+import static java.util.stream.Collectors.toList;
 
 public class InMemFormsRepository implements FormsRepository {
 
@@ -23,8 +24,8 @@ public class InMemFormsRepository implements FormsRepository {
     }
 
     @Override
-    public boolean contains(String jrFormId) {
-        return forms.stream().anyMatch(f -> f.getJrFormId().equals(jrFormId));
+    public List<Form> getByJrFormIdNotDeleted(String jrFormId) {
+        return forms.stream().filter(f -> f.getJrFormId().equals(jrFormId) && !f.isDeleted()).collect(toList());
     }
 
     @Override
@@ -54,21 +55,6 @@ public class InMemFormsRepository implements FormsRepository {
 
     @Nullable
     @Override
-    public Form getByLastDetectedUpdate(String formHash, String manifestHash) {
-        String lastDetectedVersion = MultiFormDownloader.getMd5Hash(formHash) + manifestHash;
-
-        return forms.stream().filter(f -> {
-            String formLastDetectedVersion = f.getLastDetectedFormVersionHash();
-            if (formLastDetectedVersion != null) {
-                return formLastDetectedVersion.equals(lastDetectedVersion);
-            } else {
-                return false;
-            }
-        }).findFirst().orElse(null);
-    }
-
-    @Nullable
-    @Override
     public Form getByPath(String path) {
         throw new UnsupportedOperationException();
     }
@@ -91,16 +77,15 @@ public class InMemFormsRepository implements FormsRepository {
     }
 
     @Override
-    public void setLastDetectedUpdated(String jrFormId, String formHash, String manifestHash) {
-        Form form = forms.stream().filter(f -> f.getJrFormId().equals(jrFormId)).findFirst().orElse(null);
+    public void restore(Long id) {
+        Form form = forms.stream().filter(f -> f.getId().equals(id)).findFirst().orElse(null);
 
         if (form != null) {
             forms.remove(form);
             forms.add(new Form.Builder(form)
-                    .lastDetectedFormVersionHash(MultiFormDownloader.getMd5Hash(formHash) + manifestHash)
+                    .deleted(false)
                     .build());
         }
-
     }
 
     @Override

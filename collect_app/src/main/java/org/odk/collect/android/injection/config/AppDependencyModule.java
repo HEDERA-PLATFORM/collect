@@ -15,6 +15,7 @@ import org.odk.collect.android.BuildConfig;
 import org.odk.collect.android.R;
 import org.odk.collect.android.analytics.Analytics;
 import org.odk.collect.android.analytics.FirebaseAnalytics;
+import org.odk.collect.android.application.CollectSettingsChangeHandler;
 import org.odk.collect.android.application.initialization.ApplicationInitializer;
 import org.odk.collect.android.application.initialization.CollectSettingsPreferenceMigrator;
 import org.odk.collect.android.application.initialization.SettingsPreferenceMigrator;
@@ -23,6 +24,7 @@ import org.odk.collect.android.backgroundwork.FormSubmitManager;
 import org.odk.collect.android.backgroundwork.FormUpdateManager;
 import org.odk.collect.android.backgroundwork.ReentrantLockChangeLock;
 import org.odk.collect.android.backgroundwork.SchedulerFormUpdateAndSubmitManager;
+import org.odk.collect.android.configure.SettingsChangeHandler;
 import org.odk.collect.android.configure.SettingsImporter;
 import org.odk.collect.android.configure.StructureAndTypeSettingsValidator;
 import org.odk.collect.android.configure.qr.CachingQRCodeGenerator;
@@ -40,13 +42,12 @@ import org.odk.collect.android.formmanagement.ServerFormDownloader;
 import org.odk.collect.android.formmanagement.ServerFormsDetailsFetcher;
 import org.odk.collect.android.formmanagement.matchexactly.ServerFormsSynchronizer;
 import org.odk.collect.android.formmanagement.matchexactly.SyncStatusRepository;
-import org.odk.collect.android.formmanagement.previouslydownloaded.ServerFormsUpdateChecker;
-import org.odk.collect.android.forms.DatabaseFormsRepository;
-import org.odk.collect.android.forms.DatabaseMediaFileRepository;
+import org.odk.collect.android.database.DatabaseFormsRepository;
+import org.odk.collect.android.database.DatabaseMediaFileRepository;
 import org.odk.collect.android.forms.FormsRepository;
 import org.odk.collect.android.forms.MediaFileRepository;
 import org.odk.collect.android.geo.MapProvider;
-import org.odk.collect.android.instances.DatabaseInstancesRepository;
+import org.odk.collect.android.database.DatabaseInstancesRepository;
 import org.odk.collect.android.instances.InstancesRepository;
 import org.odk.collect.android.logic.PropertyManager;
 import org.odk.collect.android.metadata.InstallIDProvider;
@@ -330,8 +331,8 @@ public class AppDependencyModule {
 
     @Singleton
     @Provides
-    public ApplicationInitializer providesApplicationInitializer(Application application, UserAgentProvider userAgentProvider, SettingsPreferenceMigrator preferenceMigrator, PropertyManager propertyManager) {
-        return new ApplicationInitializer(application, userAgentProvider, preferenceMigrator, propertyManager);
+    public ApplicationInitializer providesApplicationInitializer(Application application, UserAgentProvider userAgentProvider, SettingsPreferenceMigrator preferenceMigrator, PropertyManager propertyManager, Analytics analytics) {
+        return new ApplicationInitializer(application, userAgentProvider, preferenceMigrator, propertyManager, analytics);
     }
 
     @Provides
@@ -346,7 +347,12 @@ public class AppDependencyModule {
     }
 
     @Provides
-    public SettingsImporter providesCollectSettingsImporter(PreferencesProvider preferencesProvider, SettingsPreferenceMigrator preferenceMigrator, PropertyManager propertyManager, FormUpdateManager formUpdateManager) {
+    public SettingsChangeHandler providesSettingsChangeHandler(PropertyManager propertyManager, FormUpdateManager formUpdateManager) {
+        return new CollectSettingsChangeHandler(propertyManager, formUpdateManager);
+    }
+
+    @Provides
+    public SettingsImporter providesCollectSettingsImporter(PreferencesProvider preferencesProvider, SettingsPreferenceMigrator preferenceMigrator, SettingsChangeHandler settingsChangeHandler) {
         HashMap<String, Object> generalDefaults = GeneralKeys.DEFAULTS;
         Map<String, Object> adminDefaults = AdminKeys.getDefaults();
         return new SettingsImporter(
@@ -356,10 +362,8 @@ public class AppDependencyModule {
                 new StructureAndTypeSettingsValidator(generalDefaults, adminDefaults),
                 generalDefaults,
                 adminDefaults,
-                () -> {
-                    propertyManager.reload();
-                    formUpdateManager.scheduleUpdates();
-                });
+                settingsChangeHandler
+        );
     }
 
     @Provides
@@ -379,7 +383,7 @@ public class AppDependencyModule {
 
     @Provides
     public MediaFileRepository providesMediaFileRepository() {
-        return new DatabaseMediaFileRepository();
+        return new DatabaseMediaFileRepository(new FormsDao());
     }
 
     @Provides
@@ -413,8 +417,8 @@ public class AppDependencyModule {
     }
 
     @Provides
-    public Notifier providesNotifier(Application application) {
-        return new NotificationManagerNotifier(application);
+    public Notifier providesNotifier(Application application, PreferencesProvider preferencesProvider) {
+        return new NotificationManagerNotifier(application, preferencesProvider);
     }
 
     @Provides
@@ -429,11 +433,6 @@ public class AppDependencyModule {
     @Singleton
     public ChangeLock providesInstancesChangeLock() {
         return new ReentrantLockChangeLock();
-    }
-
-    @Provides
-    public ServerFormsUpdateChecker providesServerFormUpdatesChecker(ServerFormsDetailsFetcher serverFormsDetailsFetcher, FormsRepository formsRepository) {
-        return new ServerFormsUpdateChecker(serverFormsDetailsFetcher, formsRepository);
     }
 
     @Provides
