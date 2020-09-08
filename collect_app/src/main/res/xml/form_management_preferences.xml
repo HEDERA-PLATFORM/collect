@@ -19,16 +19,14 @@
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
-            android:defaultValue="never"
-            android:dialogTitle="@string/periodic_form_updates_check_title"
-	    <!-- CONFLICT MERGING -->
-            <!--android:defaultValue="@string/never_value"-->
-            <!--android:dialogTitle="@string/form_update_frequency_title"-->
+            android:defaultValue="@string/never_value"
+            android:dialogTitle="@string/form_update_frequency_title"
             android:entries="@array/periodic_form_updates_check_entries"
             android:entryValues="@array/periodic_form_updates_check_entry_values"
             android:key="periodic_form_updates_check"
             android:title="@string/form_update_frequency_title"
             app:iconSpaceReserved="false" />
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="automatic_update"
